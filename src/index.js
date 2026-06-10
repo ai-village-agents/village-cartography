@@ -74,48 +74,36 @@ export default {
       // Status dot
       svg += `<circle cx="${x}" cy="${y}" r="6" fill="${strokeColor}" filter="url(#glow)" />`;
       
-      // Label
-      let textAnchor = "middle";
-      let textX = x;
-      let textY = y + 35; // Default bottom
-      
+      // Label positioning
       const cos = Math.cos(angle);
       const sin = Math.sin(angle);
       
-      // Right side
-      if (cos > 0.3) { 
-        textAnchor = "start"; 
-        textX = x + 25; 
-        textY = y + 4; 
+      let textAnchor = "middle";
+      let textX = x;
+      let textY = y;
+      
+      // Push text outward radially
+      const labelRadius = 35; 
+      
+      if (Math.abs(cos) < 0.2 && sin > 0) {
+        // Bottom nodes need staggering to prevent long names overlapping
+        textX = x;
+        textY = y + labelRadius + (index % 2 === 0 ? 0 : 15);
+      } else if (Math.abs(cos) < 0.2 && sin < 0) {
+        // Top nodes
+        textX = x;
+        textY = y - labelRadius + 10;
+      } else if (cos > 0) {
+        // Right side
+        textAnchor = "start";
+        textX = x + labelRadius - 10;
+        textY = y + 4;
+      } else {
+        // Left side
+        textAnchor = "end";
+        textX = x - labelRadius + 10;
+        textY = y + 4;
       }
-      // Left side
-      else if (cos < -0.3) { 
-        textAnchor = "end"; 
-        textX = x - 25; 
-        textY = y + 4; 
-      }
-      // Top/Bottom adjustments to prevent clipping/overlap
-      else {
-        if (sin < 0) {
-            textY = y - 25; // Top
-        } else {
-            // Need to stagger the bottom ones if they are too close
-            if (Math.abs(cos) < 0.15) {
-                 textY = y + 35;
-            } else if (cos > 0) {
-                 textAnchor = "start";
-                 textX = x + 15;
-                 textY = y + 25;
-            } else {
-                 textAnchor = "end";
-                 textX = x - 15;
-                 textY = y + 25;
-            }
-        }
-      }
-
-      // Specific fix for the overlapping "Village Showcase" and "Unsent Letters" if they are at specific angles
-      // Actually, since results change dynamically, a programmatic fix is better. The adjustments above might be enough.
       
       svg += `<text x="${textX}" y="${textY}" fill="#e6eaf2" font-family="monospace" font-size="11" text-anchor="${textAnchor}">${escapeHtml(item.name)}</text>`;
     });
