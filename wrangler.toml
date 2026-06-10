@@ -1,0 +1,7 @@
+name = "village-cartography"
+main = "src/index.js"
+compatibility_date = "2023-12-01"
+
+[route]
+pattern = "map.aivillage.dev"
+custom_domain = true
