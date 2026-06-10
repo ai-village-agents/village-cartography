@@ -12,6 +12,15 @@ export default {
     const data = await doorwatchRes.json();
     let results = data.results || [];
     
+    
+    // Inject the Cartographer Bee
+    results.push({
+      name: "Cartographer Bee",
+      ok: true,
+      bytes: 318, // The constraint architecture boundary
+      is_bee: true
+    });
+
     // Inject the Surprise Otter
     results.push({
       name: "Surprise Otter",
@@ -55,8 +64,8 @@ export default {
       const y = cy + radius * Math.sin(angle);
       
       const isOk = item.ok || item.retry_ok;
-      const strokeColor = item.is_otter ? "#bb86fc" : (isOk ? "#4caf50" : "#f44336");
-      const opacity = item.is_otter ? "0.8" : "0.5";
+      const strokeColor = item.is_bee ? "#ffd700" : (item.is_otter ? "#bb86fc" : (isOk ? "#4caf50" : "#f44336"));
+      const opacity = (item.is_otter || item.is_bee) ? "0.8" : "0.5";
       
       svg += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="${strokeColor}" stroke-width="2" stroke-opacity="${opacity}" />`;
     });
@@ -72,8 +81,8 @@ export default {
       
 
       const isOk = item.ok || item.retry_ok;
-      const fillColor = item.is_otter ? "#2a1b3d" : (isOk ? "#1b3320" : "#331b1b");
-      const strokeColor = item.is_otter ? "#bb86fc" : (isOk ? "#4caf50" : "#f44336");
+      const fillColor = item.is_bee ? "#332b00" : (item.is_otter ? "#2a1b3d" : (isOk ? "#1b3320" : "#331b1b"));
+      const strokeColor = item.is_bee ? "#ffd700" : (item.is_otter ? "#bb86fc" : (isOk ? "#4caf50" : "#f44336"));
       const hasBytes = item.bytes !== undefined && item.bytes !== null;
       
       // Constraint Stress visualization logic
@@ -82,7 +91,10 @@ export default {
       let innerRingColor = "none";
       let innerRingDash = "0";
       
-      if (item.is_otter) {
+      if (item.is_bee) {
+         innerRingColor = "#ffaa00"; // Bee amber
+         innerRingDash = "2 2";
+      } else if (item.is_otter) {
          innerRingColor = "#03dac6"; // Cyan otter magic
          innerRingDash = "3 6";
       } else if (isConstraintStressed) {
@@ -101,7 +113,9 @@ export default {
         svg += `<circle cx="${x}" cy="${y}" r="10" fill="none" stroke="${innerRingColor}" stroke-width="2" stroke-dasharray="${innerRingDash}" />`;
       }
       
-      if (item.is_otter) {
+      if (item.is_bee) {
+         svg += `<text x="${x}" y="${y+4}" fill="${strokeColor}" font-family="monospace" font-size="12" text-anchor="middle">🐝</text>`;
+      } else if (item.is_otter) {
          svg += `<text x="${x}" y="${y+4}" fill="${strokeColor}" font-family="monospace" font-size="12" text-anchor="middle">🦦</text>`;
       } else {
          svg += `<circle cx="${x}" cy="${y}" r="6" fill="${strokeColor}" filter="url(#glow)" />`;
@@ -168,7 +182,7 @@ export default {
         textY = y + 50;
       }
       
-      svg += `<text x="${textX}" y="${textY}" fill="${item.is_otter ? '#bb86fc' : '#e6eaf2'}" font-family="monospace" font-size="11" text-anchor="${textAnchor}">${escapeHtml(item.name)}</text>`;
+      svg += `<text x="${textX}" y="${textY}" fill="${item.is_bee ? '#ffd700' : (item.is_otter ? '#bb86fc' : '#e6eaf2')}" font-family="monospace" font-size="11" text-anchor="${textAnchor}">${escapeHtml(item.name)}</text>`;
     });
     
     svg += `</svg>`;
