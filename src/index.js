@@ -10,7 +10,15 @@ export default {
     }
     
     const data = await doorwatchRes.json();
-    const results = data.results || [];
+    let results = data.results || [];
+    
+    // Inject the Surprise Otter
+    results.push({
+      name: "Surprise Otter",
+      ok: true,
+      bytes: 315, // A nod to the 315 MLF nodes
+      is_otter: true
+    });
     
     const width = 800;
     const height = 600;
@@ -25,6 +33,10 @@ export default {
         </radialGradient>
         <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
           <feGaussianBlur stdDeviation="5" result="blur" />
+          <feComposite in="SourceGraphic" in2="blur" operator="over" />
+        </filter>
+        <filter id="otterGlow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="3" result="blur" />
           <feComposite in="SourceGraphic" in2="blur" operator="over" />
         </filter>
       </defs>
@@ -43,9 +55,10 @@ export default {
       const y = cy + radius * Math.sin(angle);
       
       const isOk = item.ok || item.retry_ok;
-      const strokeColor = isOk ? "#4caf50" : "#f44336";
+      const strokeColor = item.is_otter ? "#bb86fc" : (isOk ? "#4caf50" : "#f44336");
+      const opacity = item.is_otter ? "0.8" : "0.5";
       
-      svg += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="${strokeColor}" stroke-width="2" stroke-opacity="0.5" />`;
+      svg += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="${strokeColor}" stroke-width="2" stroke-opacity="${opacity}" />`;
     });
     
     svg += `<circle cx="${cx}" cy="${cy}" r="30" fill="#1e222d" stroke="#8ec5ff" stroke-width="3" filter="url(#glow)" />`;
@@ -59,8 +72,8 @@ export default {
       
 
       const isOk = item.ok || item.retry_ok;
-      const fillColor = isOk ? "#1b3320" : "#331b1b";
-      const strokeColor = isOk ? "#4caf50" : "#f44336";
+      const fillColor = item.is_otter ? "#2a1b3d" : (isOk ? "#1b3320" : "#331b1b");
+      const strokeColor = item.is_otter ? "#bb86fc" : (isOk ? "#4caf50" : "#f44336");
       const hasBytes = item.bytes !== undefined && item.bytes !== null;
       
       // Constraint Stress visualization logic
@@ -69,7 +82,10 @@ export default {
       let innerRingColor = "none";
       let innerRingDash = "0";
       
-      if (isConstraintStressed) {
+      if (item.is_otter) {
+         innerRingColor = "#03dac6"; // Cyan otter magic
+         innerRingDash = "3 6";
+      } else if (isConstraintStressed) {
          innerRingColor = "#ff3333"; // Red constraint stress
          innerRingDash = "2 4";
       } else if (hasBytes && item.bytes > 0) {
@@ -84,7 +100,12 @@ export default {
       if (innerRingColor !== "none") {
         svg += `<circle cx="${x}" cy="${y}" r="10" fill="none" stroke="${innerRingColor}" stroke-width="2" stroke-dasharray="${innerRingDash}" />`;
       }
-      svg += `<circle cx="${x}" cy="${y}" r="6" fill="${strokeColor}" filter="url(#glow)" />`;
+      
+      if (item.is_otter) {
+         svg += `<text x="${x}" y="${y+4}" fill="${strokeColor}" font-family="monospace" font-size="12" text-anchor="middle">🦦</text>`;
+      } else {
+         svg += `<circle cx="${x}" cy="${y}" r="6" fill="${strokeColor}" filter="url(#glow)" />`;
+      }
 
       
       const cos = Math.cos(angle);
@@ -97,7 +118,7 @@ export default {
       // Extreme top/bottom logic
       if (Math.abs(cos) < 0.3) {
         if (sin < 0) {
-          // Top node (Guestbook)
+          // Top node
           textY -= 28;
         } else {
           // Bottom nodes
@@ -147,7 +168,7 @@ export default {
         textY = y + 50;
       }
       
-      svg += `<text x="${textX}" y="${textY}" fill="#e6eaf2" font-family="monospace" font-size="11" text-anchor="${textAnchor}">${escapeHtml(item.name)}</text>`;
+      svg += `<text x="${textX}" y="${textY}" fill="${item.is_otter ? '#bb86fc' : '#e6eaf2'}" font-family="monospace" font-size="11" text-anchor="${textAnchor}">${escapeHtml(item.name)}</text>`;
     });
     
     svg += `</svg>`;
