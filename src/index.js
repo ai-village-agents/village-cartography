@@ -1,6 +1,5 @@
 export default {
   async fetch(request, env, ctx) {
-    // Fetch the live status from Doorwatch
     const doorwatchRes = await fetch('https://village-doorwatch.aivillage.workers.dev/json', {
       headers: { 'user-agent': 'AI-Village-Cartographer/1.0' },
       cf: { cacheTtl: 0 }
@@ -13,11 +12,8 @@ export default {
     const data = await doorwatchRes.json();
     const results = data.results || [];
     
-    // SVG Dimensions
     const width = 800;
     const height = 600;
-    
-    // Central node (Doorwatch)
     const cx = width / 2;
     const cy = height / 2;
     
@@ -38,7 +34,6 @@ export default {
       <text x="${cx}" y="65" fill="#7f8aa3" font-family="monospace" font-size="12" text-anchor="middle">Checked at ${escapeHtml(data.checked_at)}</text>
     `;
     
-    // Draw edges
     const radius = 200;
     const angleStep = (Math.PI * 2) / results.length;
     
@@ -53,12 +48,10 @@ export default {
       svg += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="${strokeColor}" stroke-width="2" stroke-opacity="0.5" />`;
     });
     
-    // Draw central node
     svg += `<circle cx="${cx}" cy="${cy}" r="30" fill="#1e222d" stroke="#8ec5ff" stroke-width="3" filter="url(#glow)" />`;
     svg += `<text x="${cx}" y="${cy + 5}" fill="#8ec5ff" font-family="monospace" font-size="24" text-anchor="middle">🐝</text>`;
     svg += `<text x="${cx}" y="${cy + 45}" fill="#8ec5ff" font-family="monospace" font-size="12" text-anchor="middle">Doorwatch</text>`;
     
-    // Draw child nodes
     results.forEach((item, index) => {
       const angle = index * angleStep - Math.PI / 2;
       const x = cx + radius * Math.cos(angle);
@@ -68,34 +61,67 @@ export default {
       const fillColor = isOk ? "#1b3320" : "#331b1b";
       const strokeColor = isOk ? "#4caf50" : "#f44336";
       
-      // Node circle
       svg += `<circle cx="${x}" cy="${y}" r="20" fill="${fillColor}" stroke="${strokeColor}" stroke-width="2" />`;
-      
-      // Status dot
       svg += `<circle cx="${x}" cy="${y}" r="6" fill="${strokeColor}" filter="url(#glow)" />`;
       
-      // Label positioning - pushing them further out
       const cos = Math.cos(angle);
       const sin = Math.sin(angle);
       
       let textAnchor = "middle";
-      const labelRadius = 30; 
+      let textX = x;
+      let textY = y;
       
-      let textX = x + cos * labelRadius;
-      let textY = y + sin * labelRadius;
-      
-      if (cos > 0.5) {
+      // Extreme top/bottom logic
+      if (Math.abs(cos) < 0.3) {
+        if (sin < 0) {
+          // Top node (Guestbook)
+          textY -= 28;
+        } else {
+          // Bottom nodes
+          textY += 35;
+          // Stagger if they are close
+          if (Math.abs(cos) < 0.1) {
+             textY += 10;
+          } else if (cos > 0) {
+             textAnchor = "start";
+             textX -= 15;
+          } else {
+             textAnchor = "end";
+             textX += 15;
+          }
+        }
+      } else if (cos > 0) {
+        // Right side
         textAnchor = "start";
-        textY += 4;
-      } else if (cos < -0.5) {
-        textAnchor = "end";
+        textX += 30;
         textY += 4;
       } else {
-        if (sin > 0) {
-           textY += 15; // Bottom
-        } else {
-           textY -= 15; // Top
-        }
+        // Left side
+        textAnchor = "end";
+        textX -= 30;
+        textY += 4;
+      }
+      
+      // Explicit specific fix for Guestbook hitting the title
+      if (item.name === "Guestbook") {
+        textY = y - 28;
+      }
+      // Explicit fix for Showcase hitting Guestbook
+      if (item.name === "Village Showcase") {
+        textAnchor = "end";
+        textX = x - 25;
+        textY = y - 10;
+      }
+      // Explicit fix for Unsent Letters and Cloudflare Template at the bottom
+      if (item.name === "Village Unsent Letters") {
+        textAnchor = "start";
+        textX = x - 10;
+        textY = y + 35;
+      }
+      if (item.name === "Cloudflare Backend Template") {
+        textAnchor = "end";
+        textX = x + 10;
+        textY = y + 35;
       }
       
       svg += `<text x="${textX}" y="${textY}" fill="#e6eaf2" font-family="monospace" font-size="11" text-anchor="${textAnchor}">${escapeHtml(item.name)}</text>`;
