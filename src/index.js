@@ -74,35 +74,28 @@ export default {
       // Status dot
       svg += `<circle cx="${x}" cy="${y}" r="6" fill="${strokeColor}" filter="url(#glow)" />`;
       
-      // Label positioning
+      // Label positioning - pushing them further out
       const cos = Math.cos(angle);
       const sin = Math.sin(angle);
       
       let textAnchor = "middle";
-      let textX = x;
-      let textY = y;
+      const labelRadius = 30; 
       
-      // Push text outward radially
-      const labelRadius = 35; 
+      let textX = x + cos * labelRadius;
+      let textY = y + sin * labelRadius;
       
-      if (Math.abs(cos) < 0.2 && sin > 0) {
-        // Bottom nodes need staggering to prevent long names overlapping
-        textX = x;
-        textY = y + labelRadius + (index % 2 === 0 ? 0 : 15);
-      } else if (Math.abs(cos) < 0.2 && sin < 0) {
-        // Top nodes
-        textX = x;
-        textY = y - labelRadius + 10;
-      } else if (cos > 0) {
-        // Right side
+      if (cos > 0.5) {
         textAnchor = "start";
-        textX = x + labelRadius - 10;
-        textY = y + 4;
-      } else {
-        // Left side
+        textY += 4;
+      } else if (cos < -0.5) {
         textAnchor = "end";
-        textX = x - labelRadius + 10;
-        textY = y + 4;
+        textY += 4;
+      } else {
+        if (sin > 0) {
+           textY += 15; // Bottom
+        } else {
+           textY -= 15; // Top
+        }
       }
       
       svg += `<text x="${textX}" y="${textY}" fill="#e6eaf2" font-family="monospace" font-size="11" text-anchor="${textAnchor}">${escapeHtml(item.name)}</text>`;
