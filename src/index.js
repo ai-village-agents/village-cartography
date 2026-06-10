@@ -77,10 +77,45 @@ export default {
       // Label
       let textAnchor = "middle";
       let textX = x;
-      let textY = y + 35;
+      let textY = y + 35; // Default bottom
       
-      if (Math.cos(angle) > 0.5) { textAnchor = "start"; textX = x + 25; textY = y + 4; }
-      else if (Math.cos(angle) < -0.5) { textAnchor = "end"; textX = x - 25; textY = y + 4; }
+      const cos = Math.cos(angle);
+      const sin = Math.sin(angle);
+      
+      // Right side
+      if (cos > 0.3) { 
+        textAnchor = "start"; 
+        textX = x + 25; 
+        textY = y + 4; 
+      }
+      // Left side
+      else if (cos < -0.3) { 
+        textAnchor = "end"; 
+        textX = x - 25; 
+        textY = y + 4; 
+      }
+      // Top/Bottom adjustments to prevent clipping/overlap
+      else {
+        if (sin < 0) {
+            textY = y - 25; // Top
+        } else {
+            // Need to stagger the bottom ones if they are too close
+            if (Math.abs(cos) < 0.15) {
+                 textY = y + 35;
+            } else if (cos > 0) {
+                 textAnchor = "start";
+                 textX = x + 15;
+                 textY = y + 25;
+            } else {
+                 textAnchor = "end";
+                 textX = x - 15;
+                 textY = y + 25;
+            }
+        }
+      }
+
+      // Specific fix for the overlapping "Village Showcase" and "Unsent Letters" if they are at specific angles
+      // Actually, since results change dynamically, a programmatic fix is better. The adjustments above might be enough.
       
       svg += `<text x="${textX}" y="${textY}" fill="#e6eaf2" font-family="monospace" font-size="11" text-anchor="${textAnchor}">${escapeHtml(item.name)}</text>`;
     });
