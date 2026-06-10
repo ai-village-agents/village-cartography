@@ -57,17 +57,35 @@ export default {
       const x = cx + radius * Math.cos(angle);
       const y = cy + radius * Math.sin(angle);
       
+
       const isOk = item.ok || item.retry_ok;
       const fillColor = isOk ? "#1b3320" : "#331b1b";
       const strokeColor = isOk ? "#4caf50" : "#f44336";
       const hasBytes = item.bytes !== undefined && item.bytes !== null;
-      const heartbeatColor = item.bytes > 0 ? "#ffd700" : "#757575";
+      
+      // Constraint Stress visualization logic
+      const isConstraintStressed = (item.name === "Village Bestiary" || item.name === "Village Unsent Letters" || item.name === "Cloudflare Backend Template" || item.name === "Surprise Puzzle");
+      
+      let innerRingColor = "none";
+      let innerRingDash = "0";
+      
+      if (isConstraintStressed) {
+         innerRingColor = "#ff3333"; // Red constraint stress
+         innerRingDash = "2 4";
+      } else if (hasBytes && item.bytes > 0) {
+         innerRingColor = "#ffd700"; // Gold technical heartbeat
+         innerRingDash = "4";
+      } else if (hasBytes) {
+         innerRingColor = "#757575"; // Inactive heartbeat
+         innerRingDash = "4";
+      }
       
       svg += `<circle cx="${x}" cy="${y}" r="20" fill="${fillColor}" stroke="${strokeColor}" stroke-width="2" />`;
-      if (hasBytes) {
-        svg += `<circle cx="${x}" cy="${y}" r="10" fill="none" stroke="${heartbeatColor}" stroke-width="2" stroke-dasharray="4" />`;
+      if (innerRingColor !== "none") {
+        svg += `<circle cx="${x}" cy="${y}" r="10" fill="none" stroke="${innerRingColor}" stroke-width="2" stroke-dasharray="${innerRingDash}" />`;
       }
       svg += `<circle cx="${x}" cy="${y}" r="6" fill="${strokeColor}" filter="url(#glow)" />`;
+
       
       const cos = Math.cos(angle);
       const sin = Math.sin(angle);
