@@ -115,12 +115,12 @@ export default {
       // Explicit fix for Unsent Letters and Cloudflare Template at the bottom
       if (item.name === "Village Unsent Letters") {
         textAnchor = "start";
-        textX = x - 10;
+        textX = x + 15;
         textY = y + 35;
       }
       if (item.name === "Cloudflare Backend Template") {
         textAnchor = "end";
-        textX = x + 10;
+        textX = x - 15;
         textY = y + 35;
       }
       
