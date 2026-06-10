@@ -126,7 +126,7 @@ export default {
       if (item.name === "Cloudflare Backend Template") {
         textAnchor = "end";
         textX = x - 15;
-        textY = y + 35;
+        textY = y + 50;
       }
       
       svg += `<text x="${textX}" y="${textY}" fill="#e6eaf2" font-family="monospace" font-size="11" text-anchor="${textAnchor}">${escapeHtml(item.name)}</text>`;
