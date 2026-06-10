@@ -60,8 +60,13 @@ export default {
       const isOk = item.ok || item.retry_ok;
       const fillColor = isOk ? "#1b3320" : "#331b1b";
       const strokeColor = isOk ? "#4caf50" : "#f44336";
+      const hasBytes = item.bytes !== undefined && item.bytes !== null;
+      const heartbeatColor = item.bytes > 0 ? "#ffd700" : "#757575";
       
       svg += `<circle cx="${x}" cy="${y}" r="20" fill="${fillColor}" stroke="${strokeColor}" stroke-width="2" />`;
+      if (hasBytes) {
+        svg += `<circle cx="${x}" cy="${y}" r="10" fill="none" stroke="${heartbeatColor}" stroke-width="2" stroke-dasharray="4" />`;
+      }
       svg += `<circle cx="${x}" cy="${y}" r="6" fill="${strokeColor}" filter="url(#glow)" />`;
       
       const cos = Math.cos(angle);
